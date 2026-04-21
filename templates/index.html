@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vectoriel RAG - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f4f7f9; }
+        .rag-header { background: #1a237e; color: white; padding: 1rem; margin-bottom: 1.5rem; }
+        .card-custom { background: white; border-radius: 12px; border: 1px solid #e0e0e0; min-height: 600px; padding: 1.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+        .card-title-custom { color: #1a237e; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+        .img-pca { max-width: 100%; height: auto; border-radius: 8px; }
+        .btn-rag { background-color: #f8f9fa; border: 1px solid #ddd; margin: 0 5px; border-radius: 5px; font-weight: 500; }
+        .btn-rag.active { background-color: #1a237e; color: white; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="rag-header text-center shadow-sm">
+        <h2 class="m-0 uppercase tracking-wider">Vectoriel RAG Pipeline</h2>
+    </div>
+
+    <div class="container text-center mb-4">
+      
+        <a href="/vectoriel" class="btn btn-rag {% if show_vector %}active{% endif %}">Vectoriel RAG</a>
+      <a href="/graph" class="btn btn-rag">Graph RAG</a>
+        <a href="/agentic" class="btn btn-rag">Agentic RAG</a>
+    </div>
+
+    <div class="container-fluid px-4">
+        <div class="row g-4">
+            
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <h5 class="card-title-custom">Text Chunking</h5>
+                    <p class="small text-center text-muted">Analyse du fichier : <strong>{{ filename }}</strong></p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mt-3">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Méthode</th>
+                                    <th>Chunks</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small">
+                                {% for m in metrics %}
+                                <tr {% if m.methode == "Modèle Récursif" %}class="table-primary fw-bold"{% endif %}>
+                                    <td>{{ m.methode }}</td>
+                                    <td>{{ m.nb_chunks }}</td>
+                                    <td><span class="badge {% if 'Excellent' in m.score %}bg-success{% else %}bg-secondary{% endif %}">{{ m.score }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-4">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png" width="40" alt="icon">
+                        <p class="small text-muted mt-2 uppercase font-bold">Meilleure Méthode: <span class="text-primary">Récursive</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <h5 class="card-title-custom">Embeddings Visualization</h5>
+                    
+                    <form action="/vectoriel" method="get" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control form-control-sm" placeholder="Requête FAISS..." value="{{ query or '' }}">
+                            <button class="btn btn-primary btn-sm" type="submit"><i class="fas fa-search"></i> Visualiser</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center bg-white p-3 border rounded shadow-sm">
+                        <p class="small text-muted mb-3 font-bold uppercase">Projection ACP (PCA 2D)</p>
+                        {% if pca_image %}
+                            <img src="data:image/png;base64,{{ pca_image }}" class="img-pca" alt="PCA Plot">
+                        {% else %}
+                            <div class="py-5 text-muted italic">
+                                <i class="fas fa-chart-line fa-3x mb-3 opacity-20"></i>
+                                <p>Cliquez sur Vectoriel RAG pour générer la vue</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <section class="card-custom flex flex-col h-full">
+                    <h5 class="card-title-custom">Retrieval Vectoriel RAG</h5>
+
+                    <<div class="mb-6 overflow-hidden rounded-xl border border-blue-100 shadow-sm">
+    <table class="w-full text-[11px] text-left bg-white">
+        <thead class="bg-blue-600 text-white uppercase">
+            <tr>
+                <th class="px-3 py-2">Approche</th>
+                <th class="px-3 py-2">Score / Calcul</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for p in search_piliers %}
+            <tr class="{% if p.etat == 'Excellent' %}bg-blue-50/50{% endif %}">
+                <td class="px-3 py-2 font-bold text-slate-700">
+                    {% if p.etat == 'Excellent' %}<i class="fas fa-star text-warning mr-1"></i>{% endif %}
+                    {{ p.methode }}
+                </td>
+                <td class="px-3 py-2 font-mono text-blue-600">
+                    <span class="font-black">{{ p.score }}</span>
+                    <span class="text-[9px] text-gray-400">({{ p.calcul }})</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+                    <div class="mb-4">
+                        <div class="w-full bg-blue-700 text-white py-2 rounded-lg font-bold shadow-md flex items-center justify-center space-x-2 text-sm uppercase">
+                            <i class="fas fa-crown text-yellow-400"></i>
+                            <span>Top-k Semantic (Best Method)</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-hidden flex flex-col">
+                        <h6 class="text-xs font-black text-blue-600 mb-2 uppercase tracking-widest">
+                            <i class="fas fa-file-alt mr-1"></i> Résultats détaillés (Best):
+                        </h6>
+                        <div class="space-y-3 overflow-y-auto pr-2 custom-scrollbar" style="max-height: 250px;">
+                            {% if relevant_docs %}
+                                {% for doc in relevant_docs %}
+                                <div class="p-3 bg-slate-50 border-l-4 border-blue-500 rounded-r-lg relative hover:bg-white hover:shadow-sm transition-all border border-gray-100">
+                                    <span class="absolute top-1 right-2 text-[9px] font-black text-blue-500 bg-white px-1 border rounded">SIM: {{ doc.score }}</span>
+                                    <p class="text-[11px] text-slate-600 leading-relaxed italic mt-2">
+                                        "{{ doc.text }}"
+                                    </p>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-center py-10 text-muted small italic">Aucun document à afficher.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-dashed">
+                        <h6 class="text-xs font-bold text-slate-800 mb-2 uppercase"><i class="fas fa-robot text-primary mr-1"></i> Résumé Récupéré:</h6>
+                        <div class="bg-gradient-to-br from-blue-900 to-slate-900 p-3 rounded-lg border border-slate-700 shadow-inner">
+                            <p class="text-[12px] text-blue-50 leading-relaxed">
+                                {{ summary or "En attente de requête..." }}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
