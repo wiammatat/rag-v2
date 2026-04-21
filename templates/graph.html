@@ -2,98 +2,112 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Graph RAG - Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Graph RAG Explorer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
     <style>
-        body { background-color: #f4f7f9; }
-        .nav-btn-active { background-color: #1a237e !important; color: white !important; }
-        .graph-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; height: 100%; transition: all 0.3s ease; }
-        .graph-card:hover {box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        body { background-color: #f4f7f9; margin: 0; }
+        #cy {
+            width: 95%;
+            height: 650px;
+            margin: 20px auto;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; }
+        h2 { color: #1a237e; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        .controls { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 5px; }
+        .badge-info { background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 20px; font-weight: bold; }
     </style>
 </head>
-<body class="p-4">
-
-    <div class="flex justify-center space-x-4 mb-8">
-        <a href="/vectoriel" class="px-6 py-2 rounded-lg bg-white border font-bold text-slate-600">Vectoriel RAG</a>
-        <a href="/graph" class="px-6 py-2 rounded-lg nav-btn-active font-bold shadow-lg">Graph RAG</a>
-        <a href="/agentic" class="px-6 py-2 rounded-lg bg-white border font-bold text-slate-400 cursor-not-allowed">Agentic RAG</a>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-project-diagram"></i> Knowledge Graph Visualizer</h2>
+        <div class="controls">
+            <span class="badge-info">Mode Interactif</span> • Molette pour zoomer • Cliquer-glisser pour déplacer
+        </div>
+        <div id="cy"></div>
     </div>
 
-    <div class="grid grid-cols-3 gap-6 mb-4">
-        <div class="bg-blue-700 text-white py-3 rounded-lg text-center font-bold shadow-md">Graphe RAG Aura</div>
-        <div class="bg-blue-600 text-white py-3 rounded-lg text-center font-bold shadow-md">Communautés - Louvain</div>
-        <div class="bg-blue-800 text-white py-3 rounded-lg text-center font-bold shadow-md">Analyse Graphique Avancée</div>
-    </div>
-
-    <div class="grid grid-cols-3 gap-6">
-        
-        <div class="graph-card p-4 flex flex-col">
-            <h3 class="text-blue-900 font-bold text-center border-b pb-2 mb-4">Neo4j Aura Graph</h3>
-            <div class="flex-1 bg-slate-50 rounded-lg border border-dashed border-slate-300 flex items-center justify-center mb-4">
-                <img src="https://path-to-your-neo4j-placeholder.png" alt="Knowledge Network" class="max-w-full h-auto">
-            </div>
-            <div class="space-y-2 text-xs text-slate-600">
-                <div class="flex items-center justify-between">
-                    <span><i class="fas fa-expand-arrows-alt mr-2 text-blue-500"></i> Zoom & Filter Options</span>
-                    <input type="range" class="w-24">
-                </div>
-                <div class="flex items-center"><i class="fas fa-project-diagram mr-2 text-blue-500"></i> Node Legend & Relationships</div>
-            </div>
-        </div>
-
-        <div class="graph-card p-4 flex flex-col">
-            <h3 class="text-blue-900 font-bold text-center border-b pb-2 mb-4">Louvain Community Detection</h3>
-            <div class="flex-1 flex flex-col items-center justify-center mb-4">
-                <div class="grid grid-cols-2 gap-2 p-4">
-                    <div class="w-12 h-12 rounded-full bg-purple-400 opacity-80 blur-[1px]"></div>
-                    <div class="w-12 h-12 rounded-full bg-green-400 opacity-80 blur-[1px]"></div>
-                    <div class="w-12 h-12 rounded-full bg-orange-400 opacity-80 blur-[1px]"></div>
-                    <div class="w-12 h-12 rounded-full bg-blue-400 opacity-80 blur-[1px]"></div>
-                </div>
-            </div>
-            <ul class="text-sm space-y-2 text-slate-700">
-                <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Modularity Score: <b>{{ modularity_score }}</b></li>
-                <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Clusters Detected: <b>{{ clusters_count }}</b></li>
-                <li class="flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Cluster Members Overview</li>
-            </ul>
-        </div>
-
-        <div class="graph-card p-4 flex flex-col">
-            <h3 class="text-blue-900 font-bold text-center border-b pb-2 mb-4">Advanced Graph Analysis</h3>
-            <div class="space-y-6">
-                <div class="flex items-center justify-between p-2 hover:bg-blue-50 rounded-lg">
-                    <div>
-                        <p class="font-bold text-blue-900 text-sm">Graph Metrics</p>
-                        <p class="text-[10px] text-slate-500 uppercase">Centrality, Density</p>
-                    </div>
-                    <i class="fas fa-chart-pie text-blue-400 text-xl"></i>
-                </div>
-                <div class="flex items-center justify-between p-2 hover:bg-blue-50 rounded-lg">
-                    <div>
-                        <p class="font-bold text-blue-900 text-sm">Semantic Paths</p>
-                        <p class="text-[10px] text-slate-500 uppercase">Key Connections</p>
-                    </div>
-                    <i class="fas fa-route text-blue-400 text-xl"></i>
-                </div>
-                <div class="flex items-center justify-between p-2 hover:bg-blue-50 rounded-lg">
-                    <div>
-                        <p class="font-bold text-blue-900 text-sm">Graph & Vector Fusion</p>
-                        <p class="text-[10px] text-slate-500 uppercase">Hybrid RAG Logic</p>
-                    </div>
-                    <i class="fas fa-link text-blue-400 text-xl"></i>
-                </div>
-                <div class="flex items-center justify-between p-2 bg-blue-50 rounded-lg border-l-4 border-blue-600">
-                    <div>
-                        <p class="font-bold text-blue-900 text-sm">Contextual Insights</p>
-                        <p class="text-[10px] text-slate-500 uppercase">Recommendations</p>
-                    </div>
-                    <i class="fas fa-lightbulb text-yellow-500 text-xl animate-pulse"></i>
-                </div>
-            </div>
-        </div>
-
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            var cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: {
+                    nodes: [
+                        {% for node in nodes %}
+                        // Correction : Utilisation du filtre | tojson pour éviter les erreurs de syntaxe JS
+                        { data: { id: {{ node.id | tojson }}, label: {{ node.id | tojson }} } }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    edges: [
+                        {% for link in links %}
+                        { data: { 
+                            source: {{ link.source | tojson }}, 
+                            target: {{ link.target | tojson }}, 
+                            label: {{ link.label | tojson if link.label else "REL" | tojson }} 
+                        } }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                },
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': '#1a237e',
+                            'label': 'data(label)',
+                            'color': '#1e293b', // Texte sombre pour lisibilité hors du cercle
+                            'text-valign': 'bottom',
+                            'text-margin-y': 8,
+                            'font-size': '12px',
+                            'font-weight': 'bold',
+                            'width': '40px',
+                            'height': '40px',
+                            'overlay-padding': '6px',
+                            'z-index': '10'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 3,
+                            'line-color': '#94a3b8',
+                            'target-arrow-color': '#94a3b8',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'label': 'data(label)',
+                            'font-size': '10px',
+                            'color': '#475569',
+                            'text-rotation': 'autorotate',
+                            'text-background-opacity': 1,
+                            'text-background-color': '#ffffff',
+                            'text-background-padding': '3px',
+                            'text-background-shape': 'roundrectangle'
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'cose',
+                    idealEdgeLength: 100,
+                    nodeOverlap: 20,
+                    refresh: 20,
+                    fit: true,
+                    padding: 30,
+                    randomize: false,
+                    componentSpacing: 100,
+                    nodeRepulsion: 400000,
+                    edgeElasticity: 100,
+                    nestingFactor: 5,
+                    gravity: 80,
+                    numIter: 1000,
+                    initialTemp: 200,
+                    coolingFactor: 0.95,
+                    minTemp: 1.0
+                }
+            });
+        });
+    </script>
 </body>
 </html>
